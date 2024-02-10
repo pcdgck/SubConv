@@ -12,10 +12,14 @@
                 </a>
             </div>
 
-            <el-form label-position="labelPosition" label-width="100px" class="main">
+            <el-form label-position="right" label-width="100px" class="main">
                 <el-form-item label="订阅">
                     <el-input type="textarea" v-model="linkInput" rows="5" resize="none"
                         placeholder="请粘贴订阅链接，或者分享链接，多个订阅链接请用逗号隔开"></el-input>
+                </el-form-item>
+
+                <el-form-item label="代理规则集">
+                    <el-switch v-model="proxy_switch" active-text="关闭后将直接从GitHub获取规则集而非通过本服务器代理"></el-switch>
                 </el-form-item>
 
                 <el-form-item label="备用节点">
@@ -32,8 +36,8 @@
                     <el-input type="textarea" v-model="linkOutput" rows="2" resize="none"></el-input>
                 </el-form-item>
                 <el-form-item>
-                    <el-button type="primary" @click="submitForm('ruleForm')">生成</el-button>
-                    <el-button @click="copyForm('ruleForm')">复制</el-button>
+                    <el-button type="primary" @click="submitForm">生成</el-button>
+                    <el-button @click="copyForm">复制</el-button>
                 </el-form-item>
             </el-form>
         </el-card>
@@ -70,7 +74,8 @@ export default {
             linkOutput: '',
             time: '',
             standby: '',
-            standby_switch: 'false',
+            standby_switch: false,
+            proxy_switch: true
         };
     },
     methods: {
@@ -95,6 +100,9 @@ export default {
                         result += "&urlstandby=" + encodeURIComponent(this.standby);
                     }
                 }
+                if (!this.proxy_switch) {
+                    result += "&npr=1";
+                }
             } else {
                 this.$message({
                     message: '订阅链接不能为空',
@@ -104,7 +112,7 @@ export default {
             }
             this.linkOutput = result
         },
-        copyForm(formName) {
+        copyForm() {
             navigator.clipboard.writeText(this.linkOutput);
             this.$message({
                 message: '复制成功',

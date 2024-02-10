@@ -4,29 +4,20 @@ This module is to general a complete config for Clash
 
 
 from modules import parse
-from modules import head
 import re
-import config
+from . import config
 import yaml
-import cache
+import random
 
+from urllib.parse import urlparse, urlencode
 
-async def pack(url: list, urlstandalone: list, urlstandby:list, urlstandbystandalone: list, content: str, interval, domain, short):
-    regionDict, total, providerProxyNames = await parse.mkList(content, urlstandalone)  # regions available and corresponding group name
+async def pack(url: list, urlstandalone: list, urlstandby:list, urlstandbystandalone: list, content: str, interval: str, domain: str, short: str, notproxyrule: str, base_url: str):
+    providerProxyNames = await parse.mkListProxyNames(content)
     result = {}
-
-    # create a snippet containing region groups
-    regionGroups = []
-    for i in total.values():
-        regionGroups.append(i[1])
-    
 
     if short is None:
         # head of config
-        result.update(head.HEAD)
-
-        # dns
-        result.update(head.DNS)
+        result.update(config.configInstance.HEAD)
 
     # proxies
     proxies = {
@@ -71,12 +62,11 @@ async def pack(url: list, urlstandalone: list, urlstandby:list, urlstandbystanda
                         "type": "http",
                         "url": url[u],
                         "interval": int(interval),
-                        "path": "./sub/subscription{}.yaml".format(u),
                         "health-check": {
                             "enable": True,
                             "interval": 60,
                             # "lazy": True,
-                            "url": config.test_url
+                            "url": config.configInstance.TEST_URL
                         }
                     }
                 })
@@ -92,7 +82,7 @@ async def pack(url: list, urlstandalone: list, urlstandby:list, urlstandbystanda
                             "enable": True,
                             "interval": 60,
                             # "lazy": True,
-                            "url": config.test_url
+                             "url": config.configInstance.TEST_URL
                         }
                     }
                 })
@@ -112,10 +102,9 @@ async def pack(url: list, urlstandalone: list, urlstandby:list, urlstandbystanda
         "type": "select",
         "proxies": []
     }
-    for group in config.custom_proxy_group:
-        if group.get("rule") == False:
-            proxySelect["proxies"].append(group["name"])
-    proxySelect["proxies"].extend(regionGroups)
+    for group in config.configInstance.CUSTOM_PROXY_GROUP:
+        if group.rule == False:
+            proxySelect["proxies"].append(group.name)
     proxySelect["proxies"].append("DIRECT")
     proxyGroups["proxy-groups"].append(proxySelect)
 
@@ -137,49 +126,43 @@ async def pack(url: list, urlstandalone: list, urlstandby:list, urlstandbystanda
 
 
     # add proxy groups
-    for group in config.custom_proxy_group:
-        type = group["type"]
-        region = group.get("region")
-        regex = group.get("regex")
+    for group in config.configInstance.CUSTOM_PROXY_GROUP:
+        type = group.type
+        regex = group.regex
 
-        rule = group.get("rule")
-        if rule is None:
-            rule = True
+        rule = group.rule
 
         if type == "select" and rule:
-            prior = group["prior"]
+            prior = group.prior
             if prior == "DIRECT":
                 proxyGroups["proxy-groups"].append({
-                    "name": group["name"],
+                    "name": group.name,
                     "type": "select",
                     "proxies": [
                         "DIRECT",
                         "REJECT",
                         "🚀 节点选择",
-                        *regionGroups,
-                        *[_group["name"] for _group in config.custom_proxy_group if _group.get("rule") == False]
+                        *[_group.name for _group in config.configInstance.CUSTOM_PROXY_GROUP if _group.rule == False]
                     ]
                 })
             elif prior == "REJECT":
                 proxyGroups["proxy-groups"].append({
-                    "name": group["name"],
+                    "name": group.name,
                     "type": "select",
                     "proxies": [
                         "REJECT",
                         "DIRECT",
                         "🚀 节点选择",
-                        *regionGroups,
-                        *[_group["name"] for _group in config.custom_proxy_group if _group.get("rule") == False]
+                        *[_group.name for _group in config.configInstance.CUSTOM_PROXY_GROUP if _group.rule == False]
                     ]
                 })
             else:
                 proxyGroups["proxy-groups"].append({
-                    "name": group["name"],
+                    "name": group.name,
                     "type": "select",
                     "proxies": [
                         "🚀 节点选择",
-                        *regionGroups,
-                        *[_group["name"] for _group in config.custom_proxy_group if _group.get("rule") == False],
+                        *[_group.name for _group in config.configInstance.CUSTOM_PROXY_GROUP if _group.rule == False],
                         "DIRECT",
                         "REJECT"
                     ]
@@ -188,25 +171,19 @@ async def pack(url: list, urlstandalone: list, urlstandby:list, urlstandbystanda
         elif type == "load-balance" or type == "select" or type == "fallback" or type == "url-test":
             # init
             proxyGroup = {
-                "name": group["name"],
+                "name": group.name,
                 "type": type
             }
             # add proxies
-            if regex is not None or region is not None:
-                if regex is not None:
-                    tmp = [regex]
-                else:
-                    tmp = []
-                    for i in region:
-                        if i in total:
-                            tmp.append(total[i][0])
+            if regex is not None:
+                tmp = [regex]
                 if len(tmp) > 0:
                     providerProxies = []
                     proxyGroupProxies = []
                     proxyGroup["filter"] = "|".join(tmp)
                     # check if the proxy is in the subscription match the regex
                     # check if the standalone proxy match the regex
-                    if group.get("manual"):
+                    if group.manual:
                         if standby:
                             for p in standby:
                                 if re.search(
@@ -252,27 +229,27 @@ async def pack(url: list, urlstandalone: list, urlstandby:list, urlstandbystanda
                                 proxyGroup["proxies"] = proxyGroupProxies
                     # if no proxy match the regex, remove the name in the first group
                     if len(providerProxies) + len(proxyGroupProxies) == 0:
-                        proxyGroups["proxy-groups"][0]["proxies"].remove(group["name"])
+                        proxyGroups["proxy-groups"][0]["proxies"].remove(group.name)
                         proxyGroup = None
                 else:
-                    proxyGroups["proxy-groups"][0]["proxies"].remove(group["name"])
+                    proxyGroups["proxy-groups"][0]["proxies"].remove(group.name)
                     proxyGroup = None
                 if proxyGroup is not None:
                     if type == "load-balance":
                         proxyGroup["strategy"] = "consistent-hashing"
-                        proxyGroup["url"] = config.test_url
+                        proxyGroup["url"] = config.configInstance.TEST_URL
                         proxyGroup["interval"] = 60
                         proxyGroup["tolerance"] = 50
                     elif type == "fallback":
-                        proxyGroup["url"] = config.test_url
+                        proxyGroup["url"] = config.configInstance.TEST_URL
                         proxyGroup["interval"] = 60
                         proxyGroup["tolerance"] = 50
                     elif type == "url-test":
-                        proxyGroup["url"] = config.test_url
+                        proxyGroup["url"] = config.configInstance.TEST_URL
                         proxyGroup["interval"] = 60
                         proxyGroup["tolerance"] = 50
             else:
-                if group.get("manual"):
+                if group.manual:
                     if standby:
                         proxyGroup["use"] = standby
                     if proxiesStandbyName:
@@ -285,33 +262,6 @@ async def pack(url: list, urlstandalone: list, urlstandby:list, urlstandbystanda
             if proxyGroup is not None:
                 proxyGroups["proxy-groups"].append(proxyGroup)
 
-    # add region groups
-    for i in total:
-        urlTest = {
-            "name": total[i][1],
-            "type": "url-test",
-            "url": config.test_url,
-            "interval": 60,
-            "tolerance": 50,
-            "filter": total[i][0]
-        }
-        if subscriptions:
-            urlTest["use"] = subscriptions
-        if proxiesName:
-            urlTestProxies = []
-            for p in proxiesName:
-                if re.search(
-                    total[i][0],
-                    p,
-                    re.I
-                ) is not None:
-                    urlTestProxies.append(p)
-            if len(urlTestProxies) > 0:
-                urlTest["proxies"] = urlTestProxies
-            else:
-                urlTestProxies = None
-        proxyGroups["proxy-groups"].append(urlTest)
-
     # remove proxies that do not exist in any proxy group
     proxyGroupAndProxyList = (["DIRECT", "REJECT"])
     proxyGroupAndProxyList.extend([i["name"] for i in proxyGroups["proxy-groups"]])
@@ -320,14 +270,66 @@ async def pack(url: list, urlstandalone: list, urlstandby:list, urlstandbystanda
     for proxygroup in proxyGroups["proxy-groups"]:
         if "proxies" not in proxygroup:
             continue
-        for proxy in proxygroup["proxies"]:
-            if proxy not in proxyGroupAndProxyList:
-                proxygroup["proxies"].remove(proxy)
+        proxygroup["proxies"] = [proxy for proxy in proxygroup["proxies"] if proxy in proxyGroupAndProxyList]
 
     result.update(proxyGroups)
 
     # rules
+    # rule-providers
+    rule_providers = {
+        "rule-providers": {}
+    }
+    rule_map = {}
+    classical = {
+        "type": "http",
+        "behavior": "classical",
+        "format": "text",
+        "interval": 86400 * 7,
+    }
+    for item in config.configInstance.RULESET:
+        url = item[1]
+        # use filename
+        name = urlparse(url).path.split("/")[-1].split(".")[0]
+        # unique name
+        while name in rule_map:
+            name += str(random.randint(0, 9))
+        rule_map[name] = item[0]
+        if url.startswith("[]"):
+            continue
+        if notproxyrule is None:
+            url = "{}proxy?{}".format(base_url, urlencode({"url": url}))
+
+        rule_providers["rule-providers"].update({
+            name: {
+                **classical,
+                "url": url
+            }
+        })
+    result.update(rule_providers)
+
+    # add rule
+    rules = {
+        "rules": []
+    }
+    rules["rules"].append(
+        f"DOMAIN,{domain},DIRECT"
+    )
+    for k, v in rule_map.items():
+        if not k.startswith("[]"):
+            rules["rules"].append(
+                f"RULE-SET,{k},{v}"
+            )
+        elif k[2:] != "FINAL" and k[2:] != "MATCH":
+            rules["rules"].append(
+                f"{k[2:]},{v}"
+            )
+        else:
+            rules["rules"].append(
+                f"MATCH,{v}"
+            )
+
+    result.update(rules)
+
     yaml.SafeDumper.ignore_aliases = lambda *args : True
-    result = yaml.safe_dump(result, allow_unicode=True, sort_keys=False)
-    result += ("rules:\n  - DOMAIN,{},DIRECT\n".format(domain) + cache.cache)
-    return result
+    
+    return yaml.safe_dump(result, allow_unicode=True, sort_keys=False)
