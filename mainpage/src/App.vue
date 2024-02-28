@@ -15,7 +15,7 @@
             <el-form label-position="right" label-width="100px" class="main">
                 <el-form-item label="订阅">
                     <el-input type="textarea" v-model="linkInput" rows="5" resize="none"
-                        placeholder="请粘贴订阅链接，或者分享链接，多个订阅链接请用逗号隔开"></el-input>
+                        placeholder="请粘贴订阅链接，或者分享链接，多个订阅链接请换行或用|符号隔开"></el-input>
                 </el-form-item>
 
                 <el-form-item label="代理规则集">
@@ -25,7 +25,7 @@
                 <el-form-item label="备用节点">
                     <el-switch v-model="standby_switch" active-text="备用节点只会出现在手动选择分组"></el-switch>
                     <el-input type="textarea" v-model="standby" rows="5" resize="none" v-if="standby_switch"
-                        placeholder="请粘贴备用节点，多个备用节点请用逗号隔开"></el-input>
+                        placeholder="请粘贴备用节点，多个备用节点请换行或用|符号隔开"></el-input>
                 </el-form-item>
 
                 <el-form-item label="更新间隔">
@@ -66,61 +66,69 @@
     </div>
 </template>
 
-<script>
-export default {
-    data() {
-        return {
-            linkInput: '',
-            linkOutput: '',
-            time: '',
-            standby: '',
-            standby_switch: false,
-            proxy_switch: true
-        };
-    },
-    methods: {
-        submitForm() {
-            let result = window.location.protocol + "//" + window.location.host
-            if (this.linkInput !== "") {
-                result += "/sub?url=" + encodeURIComponent(this.linkInput);
-                if (this.time !== "") {
-                    if (/^[1-9][0-9]*$/.test(this.time)) {
-                        result += "&interval=" + this.time;
-                    }
-                    else {
-                        this.$message({
-                            message: '时间间隔必须为整数',
-                            type: 'error'
-                        });
-                        return false;
-                    }
-                }
-                if (this.standby_switch) {
-                    if (this.standby !== "") {
-                        result += "&urlstandby=" + encodeURIComponent(this.standby);
-                    }
-                }
-                if (!this.proxy_switch) {
-                    result += "&npr=1";
-                }
-            } else {
-                this.$message({
-                    message: '订阅链接不能为空',
+<script setup lang="ts">
+// init
+import { ref } from 'vue'
+import { ElButton, ElInput, ElForm, ElFormItem, ElCard, ElSwitch, ElMessage } from 'element-plus'
+import 'element-plus/es/components/button/style/css'
+import 'element-plus/es/components/input/style/css'
+import 'element-plus/es/components/form/style/css'
+import 'element-plus/es/components/form-item/style/css'
+import 'element-plus/es/components/card/style/css'
+import 'element-plus/es/components/switch/style/css'
+import 'element-plus/es/components/message/style/css'
+const linkInput = ref('')
+const linkOutput = ref('')
+const time = ref('')
+const standby = ref('')
+const standby_switch = ref(false)
+const proxy_switch = ref(true)
+
+// methods
+const submitForm = () => {
+    let result = window.location.protocol + "//" + window.location.host
+    if (linkInput.value !== "") {
+        result += "/sub?url=" + encodeURIComponent(linkInput.value);
+        if (time.value !== "") {
+            if (/^[1-9][0-9]*$/.test(time.value)) {
+                result += "&interval=" + time.value;
+            }
+            else {
+                ElMessage({
+                    message: '时间间隔必须为整数',
                     type: 'error'
                 });
+                linkOutput.value = ""
                 return false;
             }
-            this.linkOutput = result
-        },
-        copyForm() {
-            navigator.clipboard.writeText(this.linkOutput);
-            this.$message({
-                message: '复制成功',
-                type: 'success'
-            })
         }
+        if (standby_switch.value) {
+            if (standby.value !== "") {
+                result += "&urlstandby=" + encodeURIComponent(standby.value);
+            }
+        }
+        if (!proxy_switch.value) {
+            result += "&npr=1";
+        }
+    } else {
+        ElMessage({
+            message: '订阅链接不能为空',
+            type: 'error'
+        });
+        linkOutput.value = ""
+        return false;
     }
+    linkOutput.value = result
 }
+
+const copyForm = () => {
+    navigator.clipboard.writeText(linkOutput.value);
+    ElMessage({
+        message: '复制成功',
+        type: 'success'
+    })
+}
+
 </script>
 
 <style scoped>
