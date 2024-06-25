@@ -62,6 +62,7 @@ async def pack(url: list, urlstandalone: list, urlstandby:list, urlstandbystanda
                         "type": "http",
                         "url": url[u],
                         "interval": int(interval),
+                        "path": "./sub/subscription{}.yaml".format(u),
                         "health-check": {
                             "enable": True,
                             "interval": 60,
@@ -302,6 +303,7 @@ async def pack(url: list, urlstandalone: list, urlstandby:list, urlstandbystanda
         rule_providers["rule-providers"].update({
             name: {
                 **classical,
+                "path": "./rule/{}.txt".format(name),
                 "url": url
             }
         })
