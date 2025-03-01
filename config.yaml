@@ -87,6 +87,8 @@ RULESET:
   - https://raw.githubusercontent.com/SubConv/ZJU-Rule/main/Clash/Ruleset/YouTube.list
 - - 🎥 奈飞视频
   - https://raw.githubusercontent.com/SubConv/ZJU-Rule/main/Clash/Ruleset/Netflix.list
+- - 🏦 X
+  - https://raw.githubusercontent.com/SubConv/ZJU-Rule/main/Clash/Ruleset/Twitter.list
 - - 🏦 TikTok
   - https://raw.githubusercontent.com/SubConv/ZJU-Rule/main/Clash/Ruleset/TikTok.list
 - - 📺 巴哈姆特
@@ -144,6 +146,9 @@ CUSTOM_PROXY_GROUP:
 - name: 📹 油管视频
   type: select
   prior: PROXY
+- name: 🏦 X
+  type: select
+  prior: PROXY 
 - name: 🏦 TikTok
   type: select
   prior: PROXY
