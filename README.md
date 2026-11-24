@@ -6,7 +6,7 @@ English | [中文](README_CN.md)
 
 This project is a subscription converter aiming to transform subscriptions into mihomo-compatible configs.
 
-We ship two built-in templates in the root `template/` directory: `zju.yaml` and `general.yaml`. The Web UI defaults to `zju`, and the API does the same when the `template` query parameter is omitted. The repository includes `config.yaml.example` as the default runtime config.
+We ship two built-in templates in the root `template/` directory: `zju.yaml` and `general.yaml`. The Web UI defaults to `zju`, and the API does the same when the `template` query parameter is omitted. Both templates load their rule sets from [ACL4SSR](https://github.com/ACL4SSR/ACL4SSR); `zju.yaml` additionally ships the PT and AI rule sets. The repository includes `config.yaml.example` as the default runtime config.
 
 Outbound requests reject private networks by default, including redirect targets. Set `ALLOW_PRIVATE_NETWORKS: true` in `config.yaml` only when your deployment needs internal subscriptions or rules. Requests connect directly and do not use proxy environment variables.
 

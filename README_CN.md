@@ -6,7 +6,7 @@
 
 这是一个将订阅转换为 mihomo 兼容配置的项目。
 
-仓库根目录下自带两套模板：`template/zju.yaml` 和 `template/general.yaml`。Web UI 默认使用 `zju`，API 在不传 `template` 查询参数时也默认使用 `zju`。仓库提供 `config.yaml.example` 作为默认运行时配置。
+仓库根目录下自带两套模板：`template/zju.yaml` 和 `template/general.yaml`。Web UI 默认使用 `zju`，API 在不传 `template` 查询参数时也默认使用 `zju`。两套模板的规则集均来自 [ACL4SSR](https://github.com/ACL4SSR/ACL4SSR)，其中 `zju.yaml` 额外包含 PT 站与 AI 平台规则集。仓库提供 `config.yaml.example` 作为默认运行时配置。
 
 默认禁止访问内网订阅和规则地址，重定向目标同样受检查。部署确实需要访问内网时，可在 `config.yaml` 中设置 `ALLOW_PRIVATE_NETWORKS: true`。出站请求直接连接，不使用代理环境变量。
 
