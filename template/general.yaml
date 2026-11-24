@@ -108,9 +108,6 @@ RULESET:
 - - 🐟 漏网之鱼
   - '[]FINAL'
 CUSTOM_PROXY_GROUP:
-- name: ♻️ 自动选择
-  type: url-test
-  rule: false
 - name: 🚀 手动切换1
   type: select
   manual: true
