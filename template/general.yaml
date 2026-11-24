@@ -73,9 +73,7 @@ RULESET:
   - https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/AI.list
 - - 💬 Ai平台
   - https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/OpenAi.list
-- - 🎶 网易音乐
-  - https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/NetEaseMusic.list
-- - 🎶 Spotify
+- - 🌍 国外媒体
   - https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/Spotify.list
 - - 🎮 游戏平台
   - https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/Epic.list
@@ -87,18 +85,12 @@ RULESET:
   - https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/Steam.list
 - - 🎮 游戏平台
   - https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/Nintendo.list
-- - 📹 油管视频
+- - 📢 谷歌服务
   - https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/YouTube.list
-- - 🎥 奈飞视频
+- - 🌍 国外媒体
   - https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/Netflix.list
-- - 📺 巴哈姆特
+- - 🌍 国外媒体
   - https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/Bahamut.list
-- - 📺 哔哩哔哩
-  - https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/BilibiliHMT.list
-- - 📺 哔哩哔哩
-  - https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/Bilibili.list
-- - 🌏 国内媒体
-  - https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ChinaMedia.list
 - - 🌍 国外媒体
   - https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ProxyMedia.list
 - - 🚀 节点选择
@@ -143,24 +135,9 @@ CUSTOM_PROXY_GROUP:
 - name: 💬 Ai平台
   type: select
   prior: PROXY
-- name: 📹 油管视频
-  type: select
-  prior: PROXY
-- name: 🎥 奈飞视频
-  type: select
-  prior: PROXY
-- name: 📺 巴哈姆特
-  type: select
-  prior: PROXY
-- name: 📺 哔哩哔哩
-  type: select
-  prior: DIRECT
 - name: 🌍 国外媒体
   type: select
   prior: PROXY
-- name: 🌏 国内媒体
-  type: select
-  prior: DIRECT
 - name: 📢 谷歌FCM
   type: select
   prior: DIRECT
@@ -177,12 +154,6 @@ CUSTOM_PROXY_GROUP:
   type: select
   prior: DIRECT
 - name: 🎮 游戏平台
-  type: select
-  prior: DIRECT
-- name: 🎶 网易音乐
-  type: select
-  prior: DIRECT
-- name: 🎶 Spotify
   type: select
   prior: DIRECT
 - name: 🎯 全球直连
